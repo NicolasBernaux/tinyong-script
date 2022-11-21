@@ -9,7 +9,6 @@ const FileConvertSize = require('./fileConvertSize.js')
 
 const [, ,source, output = source] = process.argv
 const Promise = require('bluebird')
-showBanner()
 
 const total = {
   input: 0,
@@ -24,7 +23,7 @@ const getAllFiles = function(dirPath, arrayOfFiles) {
   files.forEach(function(file) {
     if (Fse.statSync(dirPath + "/" + file).isDirectory()) {
       arrayOfFiles = getAllFiles(dirPath + "/" + file, arrayOfFiles)
-    } else if (file.match(/(\.png|\.jpg|\.jpeg)$/)) {
+    } else if (file.match(/(\.png|\.jpg|\.JPG|\.jpeg)$/)) {
       arrayOfFiles.push(path.join(dirPath, "/", file))
     }
   })
@@ -34,7 +33,7 @@ const getAllFiles = function(dirPath, arrayOfFiles) {
 
 function compressDir(sourceDir, outputDir) {
   const files = getAllFiles(sourceDir)
-  const concurrency = 10;
+  const concurrency = 20;
   const progressBar = new cliProgress.SingleBar({format:' {bar} | {percentage}% | {filename} | {value}/{total}'}, cliProgress.Presets.shades_classic);
   progressBar.start(files.length, -1);
 
@@ -54,8 +53,7 @@ function compressDir(sourceDir, outputDir) {
         total.input += file.inputSize,
         total.output += file.outputSize
       })
-      consola.log('\n')
-      consola.info(`Terminé: ${FileConvertSize(total.input)} | ${FileConvertSize(total.output)} | ${parseInt(100 - (total.output * 100 /total.input))}%`)
+      consola.info(`\nTerminé: ${FileConvertSize(total.input)} | ${FileConvertSize(total.output)} | ${parseInt(100 - (total.output * 100 /total.input))}%`)
       console.table(data.map(file => {
         return {
           fileName: file.fileName, 
@@ -64,25 +62,13 @@ function compressDir(sourceDir, outputDir) {
           percentage: file.percentage
         }
       }))
+
+      consola.info(`\nTerminé: ${FileConvertSize(total.input)} | ${FileConvertSize(total.output)} | ${parseInt(100 - (total.output * 100 /total.input))}%`)
     });
   } catch (err) {
     console.log(err);
   }
 }
-
-function showBanner() {
-  console.log(`
-████████╗██╗███╗   ██╗██╗   ██╗██████╗ ███╗   ██╗ ██████╗
-╚══██╔══╝██║████╗  ██║╚██╗ ██╔╝██╔══██╗████╗  ██║██╔════╝
-   ██║   ██║██╔██╗ ██║ ╚████╔╝ ██████╔╝██╔██╗ ██║██║  ███╗
-   ██║   ██║██║╚██╗██║  ╚██╔╝  ██╔═══╝ ██║╚██╗██║██║   ██║
-   ██║   ██║██║ ╚████║   ██║   ██║     ██║ ╚████║╚██████╔╝
-   ╚═╝   ╚═╝╚═╝  ╚═══╝   ╚═╝   ╚═╝     ╚═╝  ╚═══╝ ╚═════╝
-`)
-
-console.log('——————————————————————————————————————')
-}
-
 
 if (Fse.statSync(source).isDirectory()) {
   if (!Fse.statSync(output).isDirectory()) {
